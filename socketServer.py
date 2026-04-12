@@ -1,5 +1,6 @@
 import socket
 import os
+import sys
 
 
 def run_server():
@@ -15,16 +16,18 @@ def run_server():
     with conn:
         print(f"User Connected: {addr}")
         while True:
-            command = conn.recv(1024).decode()
+            command = conn.recv(1024).decode().lower()
             if not command:
                 break
             # Client should be able to check the directory for the file
             # Or or just type the name of the file to download
             if command == "ls":
                 files = os.listdir()
-                # conn.send((files).encode())
                 print(files)
                 conn.send("\n".join(files).encode())
+            elif command.startswith("cp"):
+                print("Exiting Program\n")
+                sys.exit(1)
 
     server_socket.close()
 
