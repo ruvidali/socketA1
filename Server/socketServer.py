@@ -48,9 +48,9 @@ def run_server():
                                 break
                             conn.sendall((bytes_read))
                             progressBar.update(len(bytes_read))
-                else:
-                    message = f"Command {command} not found"
-                    conn.send(message.encode())
+            else:
+                message = f"Command {command} not found"
+                conn.send(message.encode())
 
     server_socket.close()
 
