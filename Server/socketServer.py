@@ -31,7 +31,7 @@ def run_server():
                 filename = command.split(" ", 1)[1]
                 print(f"Requested file: {filename}")
                 if os.path.exists(filename):
-                    conn.send("Requested file found")
+                    conn.send(b"Requested file found")
                     filesize = os.path.getsize(filename)
                     conn.send(str(filesize).encode())
 
