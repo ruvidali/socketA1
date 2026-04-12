@@ -1,6 +1,5 @@
 import socket
 import os
-from tdqm import tdqm
 
 
 def run_client():
@@ -18,3 +17,9 @@ def run_client():
         client_socket.send(choice.encode())
         response = client_socket.recv(4096).decode()
         print(f"Directory: {response}")
+
+    client_socket.close()
+
+
+if __name__ == "__main__":
+    run_client()

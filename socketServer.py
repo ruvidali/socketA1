@@ -1,6 +1,5 @@
 import socket
 import os
-from tdqm import tdqm
 
 
 def run_server():
@@ -14,7 +13,7 @@ def run_server():
 
     conn, addr = server_socket.accept()
     with conn:
-        print(f"Connected to: {addr}")
+        print(f"User Connected: {addr}")
         while True:
             command = conn.recv(1024).decode()
             if not command:
@@ -23,4 +22,13 @@ def run_server():
             # Or or just type the name of the file to download
             if command == "ls":
                 files = os.listdir()
-                conn.send(files.encode())
+                # conn.send((files).encode())
+                print(files)
+                for items in files:
+                    conn.send(items.encode())
+
+    server_socket.close()
+
+
+if __name__ == "__main__":
+    run_server()
