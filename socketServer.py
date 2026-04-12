@@ -24,8 +24,7 @@ def run_server():
                 files = os.listdir()
                 # conn.send((files).encode())
                 print(files)
-                for items in files:
-                    conn.send(items.encode())
+                conn.send("\n".join(files).encode())
 
     server_socket.close()
 
