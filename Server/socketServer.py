@@ -1,6 +1,7 @@
 import socket
 import os
 import sys
+from tqdm import tqdm
 
 
 def run_server():
@@ -27,7 +28,30 @@ def run_server():
                 conn.send("\n".join(files).encode())
             elif command.startswith("cp"):
                 # logic for file transfer
-                print("File Transfer logic")
+                filename = command.split(" ", 1)[1]
+                print(f"Requested file: {filename}")
+                if os.path.exists(filename):
+                    conn.send("Requested file found")
+                    filesize = os.path.getsize(filename)
+                    conn.send(str(filesize).encode())
+
+                    progressBar = tqdm(
+                        range(filesize),
+                        f"Sending file {filename}",
+                        unit="B",
+                        unit_scale=True,
+                    )
+                    with open(filename, "rb") as f:
+                        while True:
+                            bytes_read = f.read(4096)
+                            if not bytes_read:
+                                break
+                            conn.sendall((bytes_read))
+                            progressBar.update(len(bytes_read))
+                else:
+                    message = f"Command {command} not found"
+                    conn.send(message.encode())
+
     server_socket.close()
 
 
