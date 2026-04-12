@@ -26,9 +26,8 @@ def run_server():
                 print(files)
                 conn.send("\n".join(files).encode())
             elif command.startswith("cp"):
-                print("Exiting Program\n")
-                sys.exit(1)
-
+                # logic for file transfer
+                print("File Transfer logic")
     server_socket.close()
 
 
