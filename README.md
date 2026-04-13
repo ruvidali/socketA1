@@ -1,5 +1,5 @@
 # Socket Programming
-## Assignment 1 - Python socket application
+## CS310 Assignment 1 - Python socket application
 
 ### Setup for using the client and server
 1. Clone the repository
@@ -23,6 +23,7 @@ The client has 3 main commands for interacting with the server:
 3. Exit the program with the command __exit__
 
 # Server Application - socketServer.py
+## Socket Creation
 The server application for this assignment uses 3 imports: socket, os and sys. 
 The socket library holds all the necessary functions for implementing sockets 
 your ideal implementation. We have chosen TCP as our transport mechanism 
@@ -51,7 +52,7 @@ socket application:
 5. send()
 6. close()
 
-## socket.socket(family,type,proto,fileno)
+### socket.socket(family,type,proto,fileno)
 The socket function takes four arguments family, type, proto and fileno. We are
 only using `family` and `type`. The default value for `family` is `AF_INET`. This 
 require a pair of values (host, port) where the host represents a hostname or
@@ -60,14 +61,14 @@ an IPV4 address and port is an integer for an available port.
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ```
 
-## socket.bind(address)
+### socket.bind(address)
 The host and port values are `127.0.0.1` and `5000`. The bind function takes the
 pair values and binds it socket object. The socket must not be bound already.
 ```python
 server_socket.bind((host,port))
 ```
 
-## listen([backlog])
+### listen([backlog])
 After binding the address to the socket object we need to enable the server to
 accept connections. This creates a "waiting room" for client connections and the
 number of allowed users in the waiting room before the function starts refusing
@@ -78,7 +79,7 @@ server_socket.listen(1)
 ```
 This code indicates a backlog of 1 client allowed in the waiting room.
 
-## socket.accept()
+### socket.accept()
  The `accept()` function returns a pair value of (conn, address) when a 
  bounded socket accepts a connection.
 ```python
@@ -86,3 +87,63 @@ conn, addr = server_socket.accept()
 ```
 This code saves the client socket object to be able to send and receive
 data and an address bound to the client socket object
+
+## The Connection
+
+```python
+conn, addr = server_socket.accept()
+    with conn:
+        print(f"Client Connected: {addr}")
+        while True:
+            data = conn.recv(1024)
+            if not data:
+                break
+
+            command = data.decode()
+
+            if command == "ls":
+                files = os.listdir()
+                conn.send("\n".join(files).encode())
+
+            elif command.startswith("cp"):
+                filename = command.split(" ", 1)[1]
+                print(f"\nRequested file: {filename}")
+
+                if os.path.exists(filename):
+                    conn.send(b"File found, starting transfer....")
+
+                    filesize = os.path.getsize(filename)
+                    conn.send(str(filesize).encode())
+
+                    # Wait for client to be ready (prevents buffer overlap)
+                    conn.recv(1024)
+
+                    bytes_sent = 0
+                    with open(filename, "rb") as f:
+                        while bytes_sent < filesize:
+                            bytes_read = f.read(4096)
+                            if not bytes_read:
+                                break
+                            conn.sendall(bytes_read)
+
+                            bytes_sent += len(bytes_read)
+                            # Call our manual progress bar function
+                            draw_progress_bar(bytes_sent, filesize)
+
+                    print("Download complete\n File transfer successful")
+                else:
+                    message = "File does not exist"
+                    print(message)
+                    conn.send(message.encode())
+            else:
+                message = f'Command "{command}" not found'
+                conn.send(message.encode())
+
+
+```
+The socket server has three main functions:
+1. Check the server directory file list using the command `ls`
+2. Download an available file from the server directory using the command `cp <filename>`
+3. The server will automatically when the client terminates the connection with `exit`
+
+
