@@ -23,13 +23,13 @@ def run_server():
 
     conn, addr = server_socket.accept()
     with conn:
-        print(f"User Connected: {addr}")
+        print(f"Client Connected: {addr}")
         while True:
             data = conn.recv(1024)
             if not data:
                 break
 
-            command = data.decode().lower()
+            command = data.decode()
 
             if command == "ls":
                 files = os.listdir()
@@ -40,7 +40,7 @@ def run_server():
                 print(f"\nRequested file: {filename}")
 
                 if os.path.exists(filename):
-                    conn.send(b"EXISTS")  # Signal that file is found
+                    conn.send(b"EXISTS")
 
                     filesize = os.path.getsize(filename)
                     conn.send(str(filesize).encode())
