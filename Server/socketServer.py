@@ -1,53 +1,68 @@
 import socket
 import os
 import sys
-from tqdm import tqdm
+
+
+def draw_progress_bar(current, total, bar_length=40):
+    """Calculates and prints a manual progress bar to the console."""
+    fraction = current / total
+    arrow = int(fraction * bar_length)
+    bar = "█" * arrow + "-" * (bar_length - arrow)
+    percent = fraction * 100
+    sys.stdout.write(f"\r[{bar}] {percent:.0f}%")
+    sys.stdout.flush()
 
 
 def run_server():
-    # Server setup
     host = "127.0.0.1"
     port = 5000
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
     server_socket.listen(1)
-    print(f"Sever started, Listening on host: {host}, port: {port}")
+    print(f"Server started, Listening on host: {host}, port: {port}")
 
     conn, addr = server_socket.accept()
     with conn:
         print(f"User Connected: {addr}")
         while True:
-            command = conn.recv(1024).decode().lower()
-            if not command:
+            data = conn.recv(1024)
+            if not data:
                 break
-            # Client should be able to check the directory for the file
-            # Or or just type the name of the file to download
+
+            command = data.decode().lower()
+
             if command == "ls":
                 files = os.listdir()
-                print(files)
                 conn.send("\n".join(files).encode())
+
             elif command.startswith("cp"):
-                # logic for file transfer
                 filename = command.split(" ", 1)[1]
-                print(f"Requested file: {filename}")
+                print(f"\nRequested file: {filename}")
+
                 if os.path.exists(filename):
-                    conn.send(b"Requested file found")
+                    conn.send(b"EXISTS")  # Signal that file is found
+
                     filesize = os.path.getsize(filename)
                     conn.send(str(filesize).encode())
 
-                    progressBar = tqdm(
-                        range(filesize),
-                        f"Sending file {filename}",
-                        unit="B",
-                        unit_scale=True,
-                    )
+                    # Wait for client to be ready (prevents buffer overlap)
+                    conn.recv(1024)
+
+                    bytes_sent = 0
                     with open(filename, "rb") as f:
-                        while True:
+                        while bytes_sent < filesize:
                             bytes_read = f.read(4096)
                             if not bytes_read:
                                 break
-                            conn.sendall((bytes_read))
-                            progressBar.update(len(bytes_read))
+                            conn.sendall(bytes_read)
+
+                            bytes_sent += len(bytes_read)
+                            # Call our manual progress bar function
+                            draw_progress_bar(bytes_sent, filesize)
+
+                    print(f"\n[+] {filename} sent successfully.")
+                else:
+                    conn.send(b"ERROR: File not found")
             else:
                 message = f"Command {command} not found"
                 conn.send(message.encode())
@@ -57,3 +72,4 @@ def run_server():
 
 if __name__ == "__main__":
     run_server()
+
