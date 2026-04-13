@@ -1,5 +1,4 @@
 import socket
-import os
 import sys
 
 
@@ -73,7 +72,7 @@ def run_client():
                         # Update progress bar
                         draw_progress_bar(received_bytes, filesize)
 
-                print(f"\n[+] File saved as: downloaded_{filename}")
+                print(f"\nFile saved as: downloaded_{filename}")
             else:
                 print(f"Server says: {response}")
 
