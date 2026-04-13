@@ -18,6 +18,6 @@ python socketClient.py
 ### Client Instructions
 The client has 3 main commands for interacting with the server:
 1. Check files in the server directory with the __ls__ command
-2. Download an available file from the server directory using __cp <filename>__
+2. Download an available file from the server directory using __cp /<filename/>__
 3. Exit the program with the command __exit__
 
