@@ -40,7 +40,7 @@ def run_server():
                 print(f"\nRequested file: {filename}")
 
                 if os.path.exists(filename):
-                    conn.send(b"EXISTS")
+                    conn.send(b"File Exists")
 
                     filesize = os.path.getsize(filename)
                     conn.send(str(filesize).encode())
@@ -60,11 +60,13 @@ def run_server():
                             # Call our manual progress bar function
                             draw_progress_bar(bytes_sent, filesize)
 
-                    print(f"\n[+] {filename} sent successfully.")
+                    print(f"\n{filename} sent successfully.")
                 else:
-                    conn.send(b"ERROR: File not found")
+                    message = f"{filename} does not exist"
+                    print(message)
+                    conn.send(message.encode())
             else:
-                message = f"Command {command} not found"
+                message = f'Command "{command}" not found'
                 conn.send(message.encode())
 
     server_socket.close()
@@ -72,4 +74,3 @@ def run_server():
 
 if __name__ == "__main__":
     run_server()
-

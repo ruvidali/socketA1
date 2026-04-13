@@ -44,7 +44,7 @@ def run_client():
             # 1. Check if file exists on server
             response = client_socket.recv(1024).decode()
 
-            if response == "EXISTS":
+            if response == "File Exists":
                 # 2. Get filesize
                 filesize = int(client_socket.recv(1024).decode())
 
@@ -77,9 +77,8 @@ def run_client():
                 print(f"Server says: {response}")
 
         else:
-            # Handle standard commands like 'ls'
             response = client_socket.recv(4096).decode()
-            print(f"Response:\n{response}")
+            print(f"{response}")
 
     client_socket.close()
 
