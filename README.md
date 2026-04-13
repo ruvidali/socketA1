@@ -11,6 +11,9 @@ git clone https://github.com/ruvidali/socketA1.git
 python socketServer.py
 ```
 4. Run the client program
+```bash
+python socketClient.py
+```
 
 ### Client Instructions
 The client has 3 main commands for interacting with the server:
