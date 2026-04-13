@@ -17,6 +17,7 @@ def run_server():
     host = "127.0.0.1"
     port = 5000
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket = socket.socket()
     server_socket.bind((host, port))
     server_socket.listen(1)
     print(f"Server started, Listening on host: {host}, port: {port}")
@@ -40,7 +41,7 @@ def run_server():
                 print(f"\nRequested file: {filename}")
 
                 if os.path.exists(filename):
-                    conn.send(b"File Exists")
+                    conn.send(b"File found, starting transfer....")
 
                     filesize = os.path.getsize(filename)
                     conn.send(str(filesize).encode())
@@ -60,9 +61,9 @@ def run_server():
                             # Call our manual progress bar function
                             draw_progress_bar(bytes_sent, filesize)
 
-                    print(f"\n{filename} sent successfully.")
+                    print("Download complete\n File transfer successful")
                 else:
-                    message = f"{filename} does not exist"
+                    message = "File does not exist"
                     print(message)
                     conn.send(message.encode())
             else:
