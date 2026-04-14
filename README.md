@@ -144,6 +144,33 @@ conn, addr = server_socket.accept()
 The socket server has three main functions:
 1. Check the server directory file list using the command `ls`
 2. Download an available file from the server directory using the command `cp <filename>`
-3. The server will automatically when the client terminates the connection with `exit`
+3. The server will automatically close when the client terminates the connection with `exit`
+
+### List directory
+The `ls` command will utilise the os module to access operating system functionality like 
+opening files, process management and manipulating paths. The ls command implements a 
+similar function as the bash ls command which prints a list of file or directories in a 
+path.
+
+```python
+data = conn.recv(1024)
+            if not data:
+                break
+
+command = data.decode()
+
+            if command == "ls":
+                files = os.listdir()
+                conn.send("\n".join(files).encode())
+
+```
+Incoming data is decoded and saved in the command variable. If the command is equal to `ls`,
+the `os.listdir()` function will return a list of files in the current working directory of
+the server. The result is saved to a variable called command and is sent back to the client
+as a response
+
+### Download File
+The client can send the command `cp <filename>` where filename is a file that exists in the
+working directory of the python server application.
 
 
