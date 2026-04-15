@@ -1,3 +1,8 @@
+# CS310 Assignment 1
+# Created by Students
+# Lebeshiivah Paige Otto - S11199911
+# Alfred Samuela - S11079049
+
 import socket
 import os
 import sys
@@ -51,13 +56,13 @@ def run_server():
             if command == "ls":
                 files = os.listdir()
                 conn.send("\n".join(files).encode())
+                print("Directory list sent")
 
             # Process for the cp command
             # 1.Extract the filename from the command
             # 2.Check if the file exists
             # 3.If the file exists:
             # a.Send confirmation to the client
-            # b.
             elif command.startswith("cp"):
                 filename = command.split(" ", 1)[1]
                 print(f"\nRequested file: {filename}")
@@ -65,7 +70,8 @@ def run_server():
                 # Check if the filename in the command exists in
                 # the server directory
                 if os.path.exists(filename):
-                    conn.send(b"File found, starting transfer....")
+                    response = "File Exists"
+                    conn.send(response.encode())
 
                     # check the filesize and send it to the client
                     filesize = os.path.getsize(filename)
@@ -73,6 +79,7 @@ def run_server():
 
                     # Wait for client to be ready
                     conn.recv(1024)
+                    print("Client Ready for transfer")
 
                     # create a variable to track the bytes sent
                     bytes_sent = 0

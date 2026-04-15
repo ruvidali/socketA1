@@ -1,3 +1,8 @@
+# CS310 Assignment 1
+# Created by Students
+# Lebeshiivah Paige Otto - S11199911
+# Alfred Samuela - S11079049
+
 import socket
 import sys
 
@@ -53,10 +58,12 @@ def run_client():
 
             if response == "File Exists":
                 # Get filesize
+                print("File found")
                 filesize = int(client_socket.recv(1024).decode())
 
                 # Tell server we are ready to receive
-                client_socket.send(b"READY")
+                ready_message = "READY"
+                client_socket.send(ready_message.encode())
 
                 # Get the filename and create a variable for the
                 # bytes to be received for the progress bar
@@ -89,11 +96,11 @@ def run_client():
                 # Print the saved filename
                 print(f"\nFile saved as: downloaded_{filename}")
             else:
-                # Print the server confirmation
+                # Print the server response
                 print(f"Server says: {response}")
 
         else:
-            # Print server response for file not found
+            # Print server response ls or invalid command
             response = client_socket.recv(4096).decode()
             print(f"{response}")
 
