@@ -213,7 +213,138 @@ function. This will split the string using white space(" ") and return the value
 2. Check if the filename extracted exists in the server directory using `os.path.exists(filename)`
 3. Find the size of the file using `os.path.getsize(filename)`. This will be used for the chunks and the
 progress bar.
-4. Send the file using the `open(filename, "rb") as sf`. The "rb" string indicate the mode we want to use
+4. Send the file using the `open(filename, "rb") as cf`. The "rb" string indicate the mode we want to use
 for the transfer. `"r"` is the default which means `open for reading` and `b` means we are reading the
 file in binary mode which is required for sending multiple file types
 5. Transfer the data in chunks of 4096 bytes until the transfer is complete
+6. Send a server response "File does not exist" if the directory check fails
+
+# Client Application - socketClient.py
+## Socket Creation
+The creation of a socket for the client is similar the server configuration. The client only needs to create
+a client socket object using the same host and port details as the server configuration and instead of the
+`bind()` function we use the `connect()` function which takes a pair value of host and port as arguments.
+
+```python
+def run_client():
+    # Define the host and port
+    host = "127.0.0.1"
+    port = 5000
+
+    # create the client socket object
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Error handling for the connection to the server socket
+    try:
+        client_socket.connect((host, port))
+    except socket.error as e:
+        print(f"Error connecting to the server: {e}")
+        sys.exit(1)
+
+    # Print a success message and instructions
+    print("Connected to server")
+    print("Commands: ls- to list dir, cp <filename> - to download a file, exit\n")
+
+```
+Once the client and server are connected the client will receive instructions for the allowed commands.
+The program will take the input from the user and check the following:
+1. If the user choice is `exit` the program closes
+2. If the user choice is `ls`:
+  - The client will send the command to the server and wait for a response
+  - Response will include of the files in the server directory
+3. If the user choice is `cp <filename>`:
+  - The client waits for the server to validate the command and check the directory for the file
+  - Once the file is found, the server will send confirmation and wait for the `"READY"` response
+  from the client
+  - The filename is extracted from the server response
+  - A received bytes variable is created for progress bar updates
+  - Use the `open(f"downloaded_{filename}",) as sf` to create the file in the client directory received the
+  data chucks from the server
+  - Write the chunks to the open file until the transfer is complete
+4. If the filename cannot be found, a server response will be received to notify the user
+
+``` python
+while True:
+        choice = input("Enter command: ")
+        if not choice:
+            continue
+
+        if choice.lower() == "exit":
+            break
+
+        # Send command to server
+        client_socket.send(choice.encode())
+
+        if choice.startswith("cp"): # Check if file exists on server
+            response = client_socket.recv(1024).decode()
+
+            if response == "File Exists":
+                # Get filesize
+                filesize = int(client_socket.recv(1024).decode())
+
+                # Tell server we are ready to receive
+                client_socket.send(b"READY")
+
+                # Get the filename and create a variable for the
+                # bytes to be received for the progress bar
+                filename = choice.split(" ", 1)[1]
+                received_bytes = 0
+
+                print(f"Downloading {filename} ({filesize} bytes)...")
+
+                with open(f"downloaded_{filename}", "wb") as sf:
+                    while received_bytes < filesize:
+                        # Calculate how much to download from the server
+                        # Create a variable to only download the chunk size
+                        remaining = filesize - received_bytes
+                        chunk_size = 4096 if remaining > 4096 else remaining
+
+                        # Receive the data in chunks from the server
+                        chunk = client_socket.recv(chunk_size)
+                        if not chunk:
+                            break
+
+                        # write to the file and update the
+                        # received_bytes for the progress bar
+                        sf.write(chunk)
+                        received_bytes += len(chunk)
+
+                        # Update progress bar
+                        draw_progress_bar(received_bytes, filesize)
+
+                # Exit the loop when the file transfer is complete
+                # Print the saved filename
+                print(f"\nFile saved as: downloaded_{filename}")
+            else:
+                # Print the server confirmation
+                print(f"Server says: {response}")
+
+        else:
+            # Print server response for file not found
+            response = client_socket.recv(4096).decode()
+            print(f"{response}")
+
+    # Close the client socket
+    client_socket.close()
+
+```
+## Helper Functions
+### Progress Bar
+A simple progress bar was added for both the server and client to track the transfer progress.
+
+```python
+def draw_progress_bar(current, total, bar_length=40):
+    # Calculates and prints a manual progress bar to the console
+    # Prevent division by zero if file is empty
+    if total <= 0:
+        return
+    fraction = current / total
+    arrow = int(fraction * bar_length)
+    bar = "█" * arrow + "-" * (bar_length - arrow)
+    percent = fraction * 100
+    sys.stdout.write(f"\r[{bar}] {percent:.0f}%")
+    sys.stdout.flush()
+```
+The progress bar is designed to take the bytes sent(server) or bytes received(client) and the total filesize
+calculate the percentage of its progress.
+

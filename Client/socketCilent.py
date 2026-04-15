@@ -23,7 +23,7 @@ def run_client():
     # create the client socket object
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    # Error handling for the coonection to the server socket
+    # Error handling for the connection to the server socket
     try:
         client_socket.connect((host, port))
     except socket.error as e:

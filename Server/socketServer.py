@@ -4,7 +4,7 @@ import sys
 
 
 def draw_progress_bar(current, total, bar_length=40):
-    """Calculates and prints a manual progress bar to the console."""
+    # Calculates and prints a manual progress bar to the console
     fraction = current / total
     arrow = int(fraction * bar_length)
     bar = "█" * arrow + "-" * (bar_length - arrow)
@@ -14,12 +14,20 @@ def draw_progress_bar(current, total, bar_length=40):
 
 
 def run_server():
+    # define the host and port
     host = "127.0.0.1"
     port = 5000
+
+    # create the server socket object
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket = socket.socket()
+
+    # bind the host and port values to the socket object
     server_socket.bind((host, port))
+
+    # enable the server to accept 1 connection
     server_socket.listen(1)
+
+    # print a connection success message
     print(f"Server started, Listening on host: {host}, port: {port}")
 
     # Get the client address
@@ -99,6 +107,7 @@ def run_server():
                 message = f'Command "{command}" not found'
                 conn.send(message.encode())
 
+    # close the server socket
     server_socket.close()
 
 
