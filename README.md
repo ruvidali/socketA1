@@ -173,4 +173,47 @@ as a response
 The client can send the command `cp <filename>` where filename is a file that exists in the
 working directory of the python server application.
 
+```python
+elif command.startswith("cp"):
+                filename = command.split(" ", 1)[1]
+                print(f"\nRequested file: {filename}")
 
+                if os.path.exists(filename):
+                    conn.send(b"File found, starting transfer....")
+
+                    filesize = os.path.getsize(filename)
+                    conn.send(str(filesize).encode())
+
+                    # Wait for client to be ready
+                    conn.recv(1024)
+
+                    bytes_sent = 0
+                    with open(filename, "rb") as cf:
+                        while bytes_sent < filesize:
+                            bytes_read = cf.read(4096)
+                            if not bytes_read:
+                                break
+                            conn.sendall(bytes_read)
+
+                            bytes_sent += len(bytes_read)
+                            # Call our manual progress bar function
+                            draw_progress_bar(bytes_sent, filesize)
+
+                    print("Download complete\n File transfer successful")
+                else:
+                    message = "File does not exist"
+                    print(message)
+                    conn.send(message.encode())
+
+```
+Using the command `cp` followed by a filename will start the file transfer process. The process
+starts by:
+1. Extracting the filename from the command received from the client using the `command.split(" ", 1)[1]`
+function. This will split the string using white space(" ") and return the value with index 1
+2. Check if the filename extracted exists in the server directory using `os.path.exists(filename)`
+3. Find the size of the file using `os.path.getsize(filename)`. This will be used for the chunks and the
+progress bar.
+4. Send the file using the `open(filename, "rb") as sf`. The "rb" string indicate the mode we want to use
+for the transfer. `"r"` is the default which means `open for reading` and `b` means we are reading the
+file in binary mode which is required for sending multiple file types
+5. Transfer the data in chunks of 4096 bytes until the transfer is complete
