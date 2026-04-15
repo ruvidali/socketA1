@@ -328,8 +328,8 @@ while True:
     client_socket.close()
 
 ```
-## Helper Functions
-### Progress Bar
+# Helper Functions
+## Progress Bar
 A simple progress bar was added for both the server and client to track the transfer progress.
 
 ```python
@@ -346,5 +346,17 @@ def draw_progress_bar(current, total, bar_length=40):
     sys.stdout.flush()
 ```
 The progress bar is designed to take the bytes sent(server) or bytes received(client) and the total filesize
-calculate the percentage of its progress.
+calculate the percentage of its progress. Instead of using the `print()` function we will use the `sys.stdout.write()`
+and `sys.stdout.flush()` functions for displaying the progress.
+
+### std.write()
+Instead of using the python default `print()` method we are using `sys.stdout.write(f"\r[{bar}] {percent:.0f}%` to
+print the progress bar. By default `print()` always uses a newline, this means that our progress bar would create
+multiple lines just for the progress bar. Using the "\r" which mean carriage return will keep the progress bar
+on the same line. 
+
+### std.flush()
+This function is used to avoid buffering data. This ensures that the program is not holding data for the progress
+bar to update.
+
 
